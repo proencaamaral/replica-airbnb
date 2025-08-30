@@ -1,0 +1,23 @@
+# Node.js
+node_modules/
+.env
+
+
+
+# React/Vite
+dist/
+build/
+
+# IDEs
+.vscode/
+.idea/
+
+# dependências
+node_modules/
+
+# builds
+dist/
+build/
+
+# ambiente
+.env

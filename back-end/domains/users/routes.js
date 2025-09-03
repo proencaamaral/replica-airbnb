@@ -4,11 +4,12 @@ import { connectDb } from "../../config/db.js";
 import User from "./model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { JWTSign, JWTVerify } from "../../utils/jwt.js";
 
 
 const router = Router();
 const bcryptSalt = bcrypt.genSaltSync()
-const { JWT_SECRET_KEY } = process.env
+const { JWT_SECRET_KEY } = process.env;
 
 router.get('/', async (req, res) => {
     connectDb();
@@ -23,21 +24,9 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/profile', async (req, res) => {
-    const { token } = req.cookies;
-    
-    if (token) {
+    const userInfo = await JWTVerify(req);
 
-        try {
-            const userInfo = jwt.verify(token, JWT_SECRET_KEY)
-
-            res.json(userInfo)
-        } catch (error) {
-            res.status(500).json(error);
-        }
-    } else {
-        res.json(null);
-    }
-
+    res.json(userInfo);
 });
 
 router.post("/", async (req, res) => {
@@ -55,11 +44,18 @@ router.post("/", async (req, res) => {
 
         const { _id } = newUserDoc;
         const newUserObj = { name, email, _id };
+        try {
 
-        const token = jwt.sign(newUserObj, JWT_SECRET_KEY);
-        res.cookie("token", token).json(newUserObj);
+            const token = await JWTSign(newUserObj);
+            res.cookie("token", token).json(newUserObj);
+        } catch (error) {
+            res.status(500).json("Erro ao assinar com o JWT !", error);
+
+        }
+
     } catch (error) {
         res.status(500).json(error);
+        throw error;
     }
 });
 
@@ -77,20 +73,20 @@ router.post("/login", async (req, res) => {
 
             if (passwordCorrect) {
                 const newUserObj = { name, email, _id };
-                const token = jwt.sign(newUserObj, JWT_SECRET_KEY, {}, (error, token) => {
-                    if (error) {
-                        console.log(error);
-                        res.status(500).json(error);
-                        return;
-                    }
+
+                try {
+
+                    const token = await JWTSign(newUserObj);
                     res.cookie("token", token).json(newUserObj);
-                });
+                } catch (error) {
+
+                    res.status(500).json("Erro ao assinar com o JWT !", error);
+                }
+
+
 
             } else {
-                res.status(400).json("Senha invalida !");
-            }
-
-
+            };
 
         } else {
             res.status(400).json("Usuário não encontrado !")

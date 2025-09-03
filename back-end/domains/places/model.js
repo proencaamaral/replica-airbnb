@@ -1,4 +1,4 @@
-import { model, schema, SchemaType } from 'mongoose'
+import { model, Schema, SchemaType } from 'mongoose'
 
 const placeSchema = new Schema({
     owner: {type: Schema.Types.ObjectId, ref: "User"},
@@ -6,7 +6,8 @@ const placeSchema = new Schema({
     city: String,
     photoLink: [String],
     description: String,
-    extras: [String],
+    extras: String,
+    perks: [String],
     price: Number,
     checkin: String,
     checkout: String,
